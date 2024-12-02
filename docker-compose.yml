@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_USER: user
+      DB_PASS: password
+      DB_NAME: datingapp
+      DB_PORT: 5432
+      JWT_SECRET_KEY: secret
+      JWT_DURATION: 1h
+      MIGRATION_ENBABLED: "TRUE"
+      LOG_ENV: development
+
+  db:
+    image: postgis/postgis:13-3.1-alpine
+    environment:
+      POSTGRES_DB: datingapp
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - database:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 15s
+      timeout: 15s
+      retries: 5
+
+volumes:
+  database:
+  pgdata:
